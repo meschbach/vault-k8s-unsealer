@@ -24,16 +24,30 @@ func (a *autoUnseal) checkAndUnseal() (bool, error) {
 	var status *vault.SealStatusResponse
 
 	status, err = a.target.SealStatus()
-	if err != nil { return false, err }
-	if !status.Sealed { return true, nil }
+	if err != nil {
+		return false, err
+	}
+	if status.Sealed {
+		log.Print("Vault sealed.  Proceeding.")
+	} else {
+		log.Println("Vault not sealed")
+		return true, nil
+	}
 
 	var keyBytes []byte
 	keyBytes, err = ioutil.ReadFile(a.keyFile)
-	if err != nil { return false, err }
+	if err != nil {
+		log.Printf("Failed to read key file")
+		return false, err
+	}
+
 	key := string(keyBytes)
 
 	status, err = a.target.Unseal(key)
-	if err != nil { return false, err }
+	if err != nil {
+		log.Printf("Unable to unseal")
+		return false, err
+	}
 	if status.Sealed {
 		return false, errors.New("sealed after key(s) given")
 	}
@@ -59,14 +73,12 @@ func controlLoopUnseal(keyFile string) error {
 		currentIncrement: 0,
 		state:            0,
 	}
-	var problem error
-	var unsealed bool
 	for {
 		log.Print("Checking seal status")
-		unsealed, problem = autoUnseal.checkAndUnseal()
+		unsealed, problem := autoUnseal.checkAndUnseal()
 		var state int
 		if problem != nil {
-			log.Printf("Failed to unseal beacuse %e", err)
+			log.Printf("Failed to unseal beacuse %s", problem.Error())
 			state = stateError
 		} else if unsealed {
 			log.Print("Still unsealed")
