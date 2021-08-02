@@ -52,7 +52,6 @@ func controlLoopUnseal(keyFile string) error {
 		keyFile: keyFile,
 	}
 
-
 	backoffTimer := &exponetialBackoff{
 		unit: time.Second,
 		base:             2,
