@@ -1,4 +1,4 @@
-package main
+package internal
 
 import (
 	"errors"
@@ -54,7 +54,7 @@ func (a *autoUnseal) checkAndUnseal() (bool, error) {
 	return true, nil
 }
 
-func controlLoopUnseal(keyFile string) error {
+func ControlLoopUnseal(keyFile string) error {
 	config := vault.DefaultConfig()
 
 	client, err := vault.NewClient(config)

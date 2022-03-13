@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/meschbach/vault-k8s-unsealer/internal"
 	"log"
 	"os"
 )
@@ -10,7 +11,7 @@ func main()  {
 	if !found {
 		log.Fatal("Env var UNSEAL_FILE must be set to the key file")
 	}
-	if err := controlLoopUnseal(keyFile); err != nil {
+	if err := internal.ControlLoopUnseal(keyFile); err != nil {
 		panic(err)
 	}
 }
