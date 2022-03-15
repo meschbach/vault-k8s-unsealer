@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vault-unsealer
+  namespace: vault-integ
+  labels:
+    app: vault-unsealer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vault-unsealer
+  template:
+    metadata:
+      labels:
+        app: vault-unsealer
+    spec:
+      serviceAccountName: vault-unsealer
+      containers:
+      - name: unsealer
+        image: meschbach/vault-k8s-unsealer:dev
+        command: ["/vault-k8s-unsealer","in-cluster"]
+        env:
+          - name: "VAULT_NAMESPACE"
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: "VAULT_POD"
+            value: "vault-integ-0"
+          - name: "VAULT_SECRET"
+            value: "vault-seal"
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vault-unsealer
+  namespace: vault-integ
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: vault-integ
+  name: vault-unsealer
+rules:
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["pods","secrets"]
+  verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: vault-unsealer
+  namespace: vault-integ
+subjects:
+- kind: ServiceAccount
+  name: vault-unsealer
+  apiGroup: ""
+roleRef:
+  # "roleRef" specifies the binding to a Role / ClusterRole
+  kind: Role #this must be Role or ClusterRole
+  name: vault-unsealer # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io

@@ -28,6 +28,7 @@ type VaultSealStore struct {
 }
 
 func watchVaultPod(ctx context.Context, clientset *kubernetes.Clientset, opts runOptions) error {
+	fmt.Printf("Watching %s/%s for changes as.\n", opts.namespace, opts.podName)
 	//TODO: optimize what is being watched and manage cache
 	watch, err := clientset.CoreV1().Pods(opts.namespace).Watch(ctx, metav1.ListOptions{})
 	if err != nil {

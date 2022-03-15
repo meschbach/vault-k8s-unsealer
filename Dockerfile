@@ -8,11 +8,8 @@ FROM golang:alpine AS builder
 RUN apk update && apk add --no-cache git
 WORKDIR $GOPATH/src/github.com/meschbach/vault-k8s-unsealer/
 COPY . .
-# Fetch dependencies.
-# Using go get.
-RUN go get -d -v
 # Build the binary.
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /vault-k8s-unsealer
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /vault-k8s-unsealer ./cmd/k8s-watcher
 
 ############################
 # STEP 2 build a small image
